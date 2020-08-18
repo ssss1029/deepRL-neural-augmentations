@@ -1,4 +1,4 @@
-name: pad
+name: rl-pad-3
 channels:
   - defaults
 dependencies:

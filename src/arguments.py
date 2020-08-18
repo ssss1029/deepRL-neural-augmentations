@@ -42,6 +42,9 @@ def parse_args():
 	parser.add_argument('--encoder_lr', default=1e-3, type=float)
 	parser.add_argument('--encoder_tau', default=0.05, type=float)
 
+	# Neural Augmentations
+	parser.add_argument('--neural_aug_type', default='none', choices=['none', 'noise2net'])
+
 	# self-supervision
 	parser.add_argument('--use_rot', default=False, action='store_true') # rotation prediction
 	parser.add_argument('--use_inv', default=False, action='store_true') # inverse dynamics model

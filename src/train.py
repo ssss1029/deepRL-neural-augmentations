@@ -38,8 +38,12 @@ def main(args):
 		seed=args.seed,
 		episode_length=args.episode_length,
 		action_repeat=args.action_repeat,
-		mode=args.mode
+		mode=args.mode,
+		neural_aug_type=args.neural_aug_type
 	)
+
+	print(env.action_space) # Box(1,)
+	print(env.observation_space) # Box(9, 100, 100)
 
 	utils.make_dir(args.work_dir)
 	model_dir = utils.make_dir(os.path.join(args.work_dir, 'model'))
@@ -66,6 +70,7 @@ def main(args):
 	start_time = time.time()
 	for step in range(args.train_steps+1):
 		if done:
+			# print("Inside DONE, step = ", step)
 			if step > 0:
 				L.log('train/duration', time.time() - start_time, step)
 				start_time = time.time()
@@ -94,19 +99,24 @@ def main(args):
 
 		# Sample action for data collection
 		if step < args.init_steps:
+			# print("Sampling action")
 			action = env.action_space.sample()
 		else:
+			# print("Acquiring action from model")
 			with utils.eval_mode(agent):
 				action = agent.sample_action(obs)
 
 		# Run training update
 		if step >= args.init_steps:
+			# print("Running training updates")
 			num_updates = args.init_steps if step == args.init_steps else 1
 			for _ in range(num_updates):
 				agent.update(replay_buffer, L, step)
 
 		# Take step
+		# print("Taking environment step")
 		next_obs, reward, done, _ = env.step(action)
+		# print("obs.shape = ", obs.shape) # obs.shape =  (9, 100, 100)
 		done_bool = 0 if episode_step + 1 == env._max_episode_steps else float(done)
 		replay_buffer.add(obs, action, reward, next_obs, done_bool)
 		episode_reward += reward

@@ -18,7 +18,8 @@ def make_pad_env(
 		episode_length=1000,
 		frame_stack=3,
 		action_repeat=4,
-		mode='train'
+		mode='train',
+		neural_aug_type='none',
 	):
 	"""Make environment for PAD experiments"""
 	env = dmc2gym.make(
@@ -36,11 +37,36 @@ def make_pad_env(
 	env = GreenScreen(env, mode)
 	env = FrameStack(env, frame_stack)
 	env = ColorWrapper(env, mode)
+	env = NeuralAugmentWrapper(env, mode, neural_aug_type)
 
 	assert env.action_space.low.min() >= -1
 	assert env.action_space.high.max() <= 1
 
 	return env
+
+
+class NeuralAugmentWrapper(gym.Wrapper):
+	"""
+	Apply neural augmentations to observations
+	"""
+	def __init__(self, env, mode, aug_type):
+		super().__init__(env)
+		self.env = env
+		self._mode = mode
+		self._aug_type = aug_type
+		self._max_episode_steps = env._max_episode_steps
+
+	def step(self, action):
+		next_state, reward, done, info = self.env.step(action)
+		next_state = self.apply_neural_aug(next_state)
+		return next_state, reward, done, info
+	
+	def apply_neural_aug(self, state):
+		if self._aug_type == 'none':
+			return state
+		else:
+			raise NotImplementedError()
+
 
 
 class ColorWrapper(gym.Wrapper):

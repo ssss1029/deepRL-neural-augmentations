@@ -39,7 +39,8 @@ def main(args):
 		episode_length=args.episode_length,
 		action_repeat=args.action_repeat,
 		mode=args.mode,
-		neural_aug_type=args.neural_aug_type
+		neural_aug_type=args.neural_aug_type,
+		save_augpics=args.save_augpics,
 	)
 
 	print(env.action_space) # Box(1,)

@@ -25,7 +25,8 @@ def make_pad_env(
 		action_repeat=4,
 		mode='train',
 		neural_aug_type='none',
-		save_augpics=False
+		save_augpics=False,
+		work_dir=None
 	):
 	"""Make environment for PAD experiments"""
 	env = dmc2gym.make(
@@ -43,7 +44,7 @@ def make_pad_env(
 	env = GreenScreen(env, mode)
 	env = FrameStack(env, frame_stack)
 	env = ColorWrapper(env, mode)
-	env = NeuralAugmentWrapper(env, mode, neural_aug_type, save_augpics, frame_stack)
+	env = NeuralAugmentWrapper(env, mode, neural_aug_type, save_augpics, frame_stack, work_dir)
 
 	assert env.action_space.low.min() >= -1
 	assert env.action_space.high.max() <= 1
@@ -55,7 +56,7 @@ class NeuralAugmentWrapper(gym.Wrapper):
 	"""
 	Apply neural augmentations to observations
 	"""
-	def __init__(self, env, mode, aug_type, save_augpics, frame_stack):
+	def __init__(self, env, mode, aug_type, save_augpics, frame_stack, work_dir):
 		super().__init__(env)
 		self.env = env
 		self._mode = mode
@@ -63,6 +64,7 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		self.frame_stack = frame_stack
 		self.save_augpics = save_augpics
 		self._max_episode_steps = env._max_episode_steps
+		self.work_dir = work_dir
 
 	def step(self, action):
 		next_state, reward, done, info = self.env.step(action)
@@ -89,6 +91,7 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		out = out.astype(np.uint8)
 
 		if self.save_augpics:
+			assert self.work_dir != None
 			for i in range(self.frame_stack):
 				I = state[i*3:(i+1)*3].copy().astype(np.uint8)
 				O = out[i*3:(i+1)*3].copy().astype(np.uint8)
@@ -96,8 +99,8 @@ class NeuralAugmentWrapper(gym.Wrapper):
 				I = np.transpose(I, (1,2,0))
 				O = np.transpose(O, (1,2,0))
 
-				Image.fromarray(I, 'RGB').save(f"all_inputs_noise2net_{i}.png")
-				Image.fromarray(O, 'RGB').save(f"all_outputs_noise2net_{i}.png")
+				Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"all_inputs_noise2net_{i}.png"))
+				Image.fromarray(O, 'RGB').save(os.path.join(self.work_dir, f"all_outputs_noise2net_{i}.png"))
 			
 		return out
 

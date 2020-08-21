@@ -43,6 +43,29 @@ class Config:
                 --seed 0 \
                 --work_dir logs/cartpole_swingup/no_ss/noaugs \
                 --save_model \
+                --neural_aug_type=none",
+
+        "cheetah_run_noss_noise2net" : "python3 src/train.py \
+                --domain_name cheetah \
+                --task_name run \
+                --action_repeat 8 \
+                --mode train \
+                --num_shared_layers 8 \
+                --seed 0 \
+                --work_dir logs/cheetah_run/no_ss/noise2net \
+                --save_model \
+                --neural_aug_type=noise2net \
+                --save_augpics",
+        
+        "cheetah_run_noss_noaugs" : "python3 src/train.py \
+                --domain_name cheetah \
+                --task_name run \
+                --action_repeat 8 \
+                --mode train \
+                --num_shared_layers 8 \
+                --seed 0 \
+                --work_dir logs/cheetah_run/no_ss/noaugs \
+                --save_model \
                 --neural_aug_type=none"
     }
 

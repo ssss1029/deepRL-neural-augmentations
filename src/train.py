@@ -41,6 +41,7 @@ def main(args):
 		mode=args.mode,
 		neural_aug_type=args.neural_aug_type,
 		save_augpics=args.save_augpics,
+		work_dir=args.work_dir
 	)
 
 	print(env.action_space) # Box(1,)

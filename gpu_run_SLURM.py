@@ -18,7 +18,7 @@ class Config:
     # Shared args to put onto all of the JOBS
     SHARED_ARGS = " "
 
-    SLURM_HEADER = "conda activate rl-pad-3; srun --pty -p gpu_jsteinhardt -w shadowfax -c 6 --gres=gpu:1"
+    SLURM_HEADER = "conda activate rl-pad-3; srun --pty -p gpu_jsteinhardt -w shadowfax -c 10 --gres=gpu:1"
 
     # Specifies tasks to run. It maps tmux session name to the command to run in that session.
     JOBS = {

@@ -9,7 +9,7 @@ from agent.encoder import make_encoder
 LOG_FREQ = 10000
 
 
-def make_agent(obs_shape, action_shape, args):
+def make_agent(obs_shape, action_shape, args, tensorboard_writer):
     return SacSSAgent(
         obs_shape=obs_shape,
         action_shape=action_shape,
@@ -39,6 +39,7 @@ def make_agent(obs_shape, action_shape, args):
         num_shared_layers=args.num_shared_layers,
         num_filters=args.num_filters,
         curl_latent_dim=args.curl_latent_dim,
+        tensorboard_writer=tensorboard_writer
     )
 
 
@@ -274,6 +275,7 @@ class SacSSAgent(object):
         num_shared_layers=4,
         num_filters=32,
         curl_latent_dim=128,
+        tensorboard_writer=None
     ):
         self.discount = discount
         self.critic_tau = critic_tau
@@ -285,6 +287,7 @@ class SacSSAgent(object):
         self.use_inv = use_inv
         self.use_curl = use_curl
         self.curl_latent_dim = curl_latent_dim
+        self.tensorboard_writer = tensorboard_writer
 
         assert num_layers >= num_shared_layers, 'num shared layers cannot exceed total amount'
 

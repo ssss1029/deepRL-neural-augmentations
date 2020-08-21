@@ -9,6 +9,7 @@ import time
 from logger import Logger
 from video import VideoRecorder
 
+from torch.utils.tensorboard import SummaryWriter
 
 def evaluate(env, agent, video, num_episodes, L, step):
 	"""Evaluate agent"""
@@ -30,6 +31,12 @@ def evaluate(env, agent, video, num_episodes, L, step):
 
 
 def main(args):
+	# Initilalize tensorboard
+	if args.tensorboard == True:
+		writer = SummaryWriter('runs/fashion_mnist_experiment_1')
+	else:
+		writer = None
+
 	# Initialize environment
 	utils.set_seed_everywhere(args.seed)
 	env = make_pad_env(
@@ -64,7 +71,8 @@ def main(args):
 	agent = make_agent(
 		obs_shape=cropped_obs_shape,
 		action_shape=env.action_space.shape,
-		args=args
+		args=args,
+		tensorboard_writer=writer
 	)
 
 	L = Logger(args.work_dir, use_tb=False)

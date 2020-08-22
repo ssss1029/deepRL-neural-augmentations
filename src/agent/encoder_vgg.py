@@ -1,8 +1,11 @@
+"""
+
+VGG-based PixelEncoder
+
+"""
+
 import torch
 import torch.nn as nn
-
-
-OUT_DIM = {2: 39, 4: 35, 6: 31, 8: 27, 10: 23, 11: 21, 12: 19}
 
 
 def tie_weights(src, trg):
@@ -48,17 +51,12 @@ class PixelEncoder(nn.Module):
 			CenterCrop(size=84), NormalizeImg()
 		)
 
-		self.convs = nn.ModuleList(
-			[nn.Conv2d(obs_shape[0], num_filters, 3, stride=2)]
-		)
-		for i in range(num_layers - 1):
-			self.convs.append(nn.Conv2d(num_filters, num_filters, 3, stride=1))
+        self.convs = ...
 
-		out_dim = OUT_DIM[num_layers]
 		self.fc = nn.Linear(num_filters * out_dim * out_dim, self.feature_dim)
 		self.ln = nn.LayerNorm(self.feature_dim)
 
-		# print(self)
+		print(self)
 
 	def forward_conv(self, obs, detach=False):
 		obs = self.preprocess(obs)

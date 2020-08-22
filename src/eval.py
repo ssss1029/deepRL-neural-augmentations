@@ -110,7 +110,8 @@ def main(args):
 	agent = make_agent(
 		obs_shape=cropped_obs_shape,
 		action_shape=env.action_space.shape,
-		args=args
+		args=args,
+		tensorboard_writer=None
 	)
 	agent.load(model_dir, args.pad_checkpoint)
 

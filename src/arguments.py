@@ -46,6 +46,7 @@ def parse_args():
 	parser.add_argument('--neural_aug_type', default='none', choices=['none', 'noise2net'])
 	parser.add_argument('--save_augpics', default=False, action='store_true')
 	parser.add_argument('--augmix', default=False, action='store_true')
+	parser.add_argument('--cutout_color', default=False, action='store_true')
 
 	# self-supervision
 	parser.add_argument('--use_rot', default=False, action='store_true') # rotation prediction

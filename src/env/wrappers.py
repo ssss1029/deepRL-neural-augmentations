@@ -27,6 +27,7 @@ def make_pad_env(
 		mode='train',
 		neural_aug_type='none',
 		augmix=False,
+		cutout_color=False,
 		save_augpics=False,
 		work_dir=None
 	):
@@ -49,14 +50,81 @@ def make_pad_env(
 	env = GreenScreen(env, mode)
 	env = FrameStack(env, frame_stack)
 	env = ColorWrapper(env, mode)
+	
+	# Augmentations
 	env = NeuralAugmentWrapper(env, mode, neural_aug_type, save_augpics, frame_stack, work_dir)
 	if augmix == True:
 		env = AugMixWrapper(env, mode, save_augpics, frame_stack, work_dir, OBS_SIZE)
+	if cutout_color == True:
+		env = CutOutColorWrapper(env, mode, save_augpics, frame_stack, work_dir, OBS_SIZE)
+	if save_augpics == True:
+		env = SaverWrapper(env, frame_stack, work_dir, OBS_SIZE)
 
 	assert env.action_space.low.min() >= -1
 	assert env.action_space.high.max() <= 1
 
 	return env
+
+
+class SaverWrapper(gym.Wrapper):
+	def __init__(self, env, frame_stack, work_dir, obs_size):
+		super().__init__(env)
+		self.env = env
+		self.frame_stack = frame_stack
+		self._max_episode_steps = env._max_episode_steps
+		self.work_dir = work_dir
+		self.obs_size = obs_size
+
+	def step(self, action):
+		next_state, reward, done, info = self.env.step(action)
+		self.apply_saver(next_state)
+		return next_state, reward, done, info
+	
+	def apply_saver(self, state):
+		"""
+		State: (3*frame_stack x H x W)
+		"""
+
+		# 3 Images
+		for i in range(self.frame_stack):
+			I = state[i*3:(i+1)*3].copy().astype(np.uint8)
+			I = np.transpose(I, (1,2,0))
+			Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"augmented_image_{i}.png"))
+		
+		exit()
+
+
+class CutOutColorWrapper(gym.Wrapper):
+	def __init__(self, env, mode, save_augpics, frame_stack, work_dir, obs_size):
+		super().__init__(env)
+		self.env = env
+		self._mode = mode
+		self.frame_stack = frame_stack
+		self.save_augpics = save_augpics
+		self._max_episode_steps = env._max_episode_steps
+		self.work_dir = work_dir
+		self.obs_size = obs_size
+
+	def step(self, action):
+		next_state, reward, done, info = self.env.step(action)
+		next_state = self.random_cutout(next_state)
+		return next_state, reward, done, info
+
+	def random_cutout(self, imgs, min_cut=6, max_cut=36):
+		"""
+		From https://arxiv.org/pdf/2004.14990.pdf
+		"""
+		
+		c, h, w = imgs.shape[0] // self.frame_stack, imgs.shape[1], imgs.shape[2]
+		for i in range(self.frame_stack):
+			w_cut = np.random.randint(min_cut, max_cut + 1) # random size cut
+			h_cut = np.random.randint(min_cut, max_cut + 1) # rectangular shape
+			fill = np.random.randint(0, 256, size=(c, 1, 1)) # assume uint8.
+			w1 = np.random.randint(0, w - w_cut + 1) # uniform over interior
+			h1 = np.random.randint(0, h - h_cut + 1)
+			imgs[i*3:(i+1)*3, h1:h1 + h_cut, w1:w1 + w_cut] = fill
+
+		return imgs
 
 
 class AugMixWrapper(gym.Wrapper):
@@ -95,21 +163,7 @@ class AugMixWrapper(gym.Wrapper):
 		
 		out = out.astype(np.uint8)
 
-		if self.save_augpics:
-			assert self.work_dir != None
-			for i in range(self.frame_stack):
-				I = state[i*3:(i+1)*3].copy().astype(np.uint8)
-				O = out[i*3:(i+1)*3].copy().astype(np.uint8)
-
-				I = np.transpose(I, (1,2,0))
-				O = np.transpose(O, (1,2,0))
-
-				Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"all_inputs_augmix_{i}.png"))
-				Image.fromarray(O, 'RGB').save(os.path.join(self.work_dir, f"all_outputs_augmix_{i}.png"))
-		
 		return out
-	
-
 
 
 class NeuralAugmentWrapper(gym.Wrapper):
@@ -150,18 +204,6 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		
 		out = out.astype(np.uint8)
 
-		if self.save_augpics:
-			assert self.work_dir != None
-			for i in range(self.frame_stack):
-				I = state[i*3:(i+1)*3].copy().astype(np.uint8)
-				O = out[i*3:(i+1)*3].copy().astype(np.uint8)
-
-				I = np.transpose(I, (1,2,0))
-				O = np.transpose(O, (1,2,0))
-
-				Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"all_inputs_noise2net_{i}.png"))
-				Image.fromarray(O, 'RGB').save(os.path.join(self.work_dir, f"all_outputs_noise2net_{i}.png"))
-			
 		return out
 
 

@@ -47,6 +47,7 @@ def main(args):
 		action_repeat=args.action_repeat,
 		mode=args.mode,
 		neural_aug_type=args.neural_aug_type,
+		augmix=args.augmix,
 		save_augpics=args.save_augpics,
 		work_dir=args.work_dir
 	)

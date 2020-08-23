@@ -14,6 +14,7 @@ from PIL import Image
 
 from env.neural_augs.Res2Net import Res2Net
 from env.neural_augs.utils import call_augfn
+from env.neural_augs.augmix.AugMix import augment_and_mix
 
 
 def make_pad_env(
@@ -25,18 +26,22 @@ def make_pad_env(
 		action_repeat=4,
 		mode='train',
 		neural_aug_type='none',
+		augmix=False,
 		save_augpics=False,
 		work_dir=None
 	):
 	"""Make environment for PAD experiments"""
+
+	OBS_SIZE = 100
+
 	env = dmc2gym.make(
 		domain_name=domain_name,
 		task_name=task_name,
 		seed=seed,
 		visualize_reward=False,
 		from_pixels=True,
-		height=100,
-		width=100,
+		height=OBS_SIZE,
+		width=OBS_SIZE,
 		episode_length=episode_length,
 		frame_skip=action_repeat
 	)
@@ -45,11 +50,66 @@ def make_pad_env(
 	env = FrameStack(env, frame_stack)
 	env = ColorWrapper(env, mode)
 	env = NeuralAugmentWrapper(env, mode, neural_aug_type, save_augpics, frame_stack, work_dir)
+	if augmix == True:
+		env = AugMixWrapper(env, mode, save_augpics, frame_stack, work_dir, OBS_SIZE)
 
 	assert env.action_space.low.min() >= -1
 	assert env.action_space.high.max() <= 1
 
 	return env
+
+
+class AugMixWrapper(gym.Wrapper):
+	"""
+	Apply AugMix to observations
+	"""
+	def __init__(self, env, mode, save_augpics, frame_stack, work_dir, obs_size):
+		super().__init__(env)
+		self.env = env
+		self._mode = mode
+		self.frame_stack = frame_stack
+		self.save_augpics = save_augpics
+		self._max_episode_steps = env._max_episode_steps
+		self.work_dir = work_dir
+		self.obs_size = obs_size
+
+	def step(self, action):
+		next_state, reward, done, info = self.env.step(action)
+		next_state = self.apply_augmix(next_state)
+		return next_state, reward, done, info
+	
+	def apply_augmix(self, state):
+		"""
+		State: (3*frame_stack x H x W)
+		"""
+
+		# 3 Images
+		out = np.zeros(state.shape)
+		for i in range(self.frame_stack):
+			curr_img = state[i*3:(i+1)*3]
+			curr_img = np.transpose(curr_img, (1,2,0)).astype(np.float32) / 255.0 # Make it H x W x C
+			curr_out = augment_and_mix(curr_img, self.obs_size)
+			curr_out = np.transpose(curr_out, (2,0,1)) # Make it C x H x W
+			curr_out = np.clip(curr_out, 0, 1) * 255.0
+			out[i*3:(i+1)*3] = curr_out
+		
+		out = out.astype(np.uint8)
+
+		if self.save_augpics:
+			assert self.work_dir != None
+			for i in range(self.frame_stack):
+				I = state[i*3:(i+1)*3].copy().astype(np.uint8)
+				O = out[i*3:(i+1)*3].copy().astype(np.uint8)
+
+				I = np.transpose(I, (1,2,0))
+				O = np.transpose(O, (1,2,0))
+
+				Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"all_inputs_augmix_{i}.png"))
+				Image.fromarray(O, 'RGB').save(os.path.join(self.work_dir, f"all_outputs_augmix_{i}.png"))
+		
+		return out
+	
+
 
 
 class NeuralAugmentWrapper(gym.Wrapper):

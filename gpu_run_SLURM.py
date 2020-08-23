@@ -21,52 +21,30 @@ class Config:
     SLURM_HEADER = "conda activate rl-pad-3; srun --pty -p gpu_jsteinhardt -w shadowfax -c 10 --gres=gpu:1"
 
     # Specifies tasks to run. It maps tmux session name to the command to run in that session.
-    JOBS = {
-        "cartpole_swingup_noss_noise2net" : "python3 src/train.py \
+    JOBS = {        
+        "cartpole_swingup_noss_augmix" : "python3 src/train.py \
                 --domain_name cartpole \
                 --task_name swingup \
                 --action_repeat 8 \
                 --mode train \
                 --num_shared_layers 8 \
                 --seed 0 \
-                --work_dir logs/cartpole_swingup/no_ss/noise2net \
+                --work_dir logs/cartpole_swingup/no_ss/augmix \
                 --save_model \
-                --neural_aug_type=noise2net \
-                --save_augpics",
-        
-        "cartpole_swingup_noss_noaugs" : "python3 src/train.py \
-                --domain_name cartpole \
-                --task_name swingup \
-                --action_repeat 8 \
-                --mode train \
-                --num_shared_layers 8 \
-                --seed 0 \
-                --work_dir logs/cartpole_swingup/no_ss/noaugs \
-                --save_model \
-                --neural_aug_type=none",
+                --neural_aug_type=none \
+                --augmix",
 
-        "cheetah_run_noss_noise2net" : "python3 src/train.py \
+        "cheetah_run_noss_augmix" : "python3 src/train.py \
                 --domain_name cheetah \
                 --task_name run \
                 --action_repeat 8 \
                 --mode train \
                 --num_shared_layers 8 \
                 --seed 0 \
-                --work_dir logs/cheetah_run/no_ss/noise2net \
+                --work_dir logs/cheetah_run/no_ss/augmix \
                 --save_model \
-                --neural_aug_type=noise2net \
-                --save_augpics",
-        
-        "cheetah_run_noss_noaugs" : "python3 src/train.py \
-                --domain_name cheetah \
-                --task_name run \
-                --action_repeat 8 \
-                --mode train \
-                --num_shared_layers 8 \
-                --seed 0 \
-                --work_dir logs/cheetah_run/no_ss/noaugs \
-                --save_model \
-                --neural_aug_type=none"
+                --neural_aug_type=none \
+                --augmix"
     }
 
     # Time to wait between putting jobs on GPUs (in seconds). This is useful because it might take time 

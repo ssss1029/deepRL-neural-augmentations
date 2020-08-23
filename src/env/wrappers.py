@@ -91,8 +91,6 @@ class SaverWrapper(gym.Wrapper):
 			I = np.transpose(I, (1,2,0))
 			Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"augmented_image_{i}.png"))
 		
-		exit()
-
 
 class CutOutColorWrapper(gym.Wrapper):
 	def __init__(self, env, mode, save_augpics, frame_stack, work_dir, obs_size):

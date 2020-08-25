@@ -22,27 +22,60 @@ class Config:
 
     # Specifies tasks to run. It maps tmux session name to the command to run in that session.
     JOBS = {        
-        "cartpole_swingup_noss_randconv" : "python3 src/train.py \
-                --domain_name cartpole \
-                --task_name swingup \
-                --action_repeat 8 \
+        "ball_in_cup_catch_noss_noise2net" : "python3 src/train.py \
+                --domain_name ball_in_cup \
+                --task_name catch \
+                --action_repeat 4 \
                 --mode train \
                 --num_shared_layers 8 \
                 --seed 0 \
-                --work_dir logs/cartpole_swingup/no_ss/randconv \
+                --work_dir logs/ball_in_cup_catch/no_ss/noise2net \
                 --save_model \
-                --neural_aug_type=randconv",
-
-        "cheetah_run_noss_randconv" : "python3 src/train.py \
-                --domain_name cheetah \
-                --task_name run \
-                --action_repeat 8 \
+                --neural_aug_type=noise2net",
+        
+        "ball_in_cup_catch_noss_augmix" : "python3 src/train.py \
+                --domain_name ball_in_cup \
+                --task_name catch \
+                --action_repeat 4 \
                 --mode train \
                 --num_shared_layers 8 \
                 --seed 0 \
-                --work_dir logs/cheetah_run/no_ss/randconv \
+                --work_dir logs/ball_in_cup_catch/no_ss/augmix \
                 --save_model \
-                --neural_aug_type=randconv"
+                --augmix",
+        
+        "ball_in_cup_catch_noss_cutout_color" : "python3 src/train.py \
+                --domain_name ball_in_cup \
+                --task_name catch \
+                --action_repeat 4 \
+                --mode train \
+                --num_shared_layers 8 \
+                --seed 0 \
+                --work_dir logs/ball_in_cup_catch/no_ss/cutout_color \
+                --save_model \
+                --cutout_color",
+        
+        "ball_in_cup_catch_noss_noaugs" : "python3 src/train.py \
+                --domain_name ball_in_cup \
+                --task_name catch \
+                --action_repeat 4 \
+                --mode train \
+                --num_shared_layers 8 \
+                --seed 0 \
+                --work_dir logs/ball_in_cup_catch/no_ss/noaugs \
+                --save_model",
+        
+        "ball_in_cup_catch_noss_randconv_skipProb1e-1" : "python3 src/train.py \
+                --domain_name ball_in_cup \
+                --task_name catch \
+                --action_repeat 4 \
+                --mode train \
+                --num_shared_layers 8 \
+                --seed 0 \
+                --work_dir logs/ball_in_cup_catch/no_ss/randconv_skipProb1e-1 \
+                --save_model \
+                --neural_aug_type=randconv \
+                --neural_aug_skip_prob=0.1",
     }
 
     # Time to wait between putting jobs on GPUs (in seconds). This is useful because it might take time 

@@ -82,6 +82,7 @@ def evaluate(env, agent, args, video, adapt=False):
 		video.save(f'{args.mode}_pad_{i}.mp4' if adapt else f'{args.mode}_eval_{i}.mp4')
 		episode_rewards.append(episode_reward)
 
+	print(episode_rewards)
 	return np.mean(episode_rewards)
 
 

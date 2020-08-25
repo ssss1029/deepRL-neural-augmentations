@@ -22,29 +22,27 @@ class Config:
 
     # Specifies tasks to run. It maps tmux session name to the command to run in that session.
     JOBS = {        
-        "cartpole_swingup_noss_cutout_color" : "python3 src/train.py \
+        "cartpole_swingup_noss_randconv" : "python3 src/train.py \
                 --domain_name cartpole \
                 --task_name swingup \
                 --action_repeat 8 \
                 --mode train \
                 --num_shared_layers 8 \
                 --seed 0 \
-                --work_dir logs/cartpole_swingup/no_ss/cutout_color \
+                --work_dir logs/cartpole_swingup/no_ss/randconv \
                 --save_model \
-                --neural_aug_type=none \
-                --cutout_color",
+                --neural_aug_type=randconv",
 
-        "cheetah_run_noss_cutout_color" : "python3 src/train.py \
+        "cheetah_run_noss_randconv" : "python3 src/train.py \
                 --domain_name cheetah \
                 --task_name run \
                 --action_repeat 8 \
                 --mode train \
                 --num_shared_layers 8 \
                 --seed 0 \
-                --work_dir logs/cheetah_run/no_ss/cutout_color \
+                --work_dir logs/cheetah_run/no_ss/randconv \
                 --save_model \
-                --neural_aug_type=none \
-                --cutout_color"
+                --neural_aug_type=randconv"
     }
 
     # Time to wait between putting jobs on GPUs (in seconds). This is useful because it might take time 

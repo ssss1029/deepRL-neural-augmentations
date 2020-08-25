@@ -91,6 +91,8 @@ class SaverWrapper(gym.Wrapper):
 			I = np.transpose(I, (1,2,0))
 			Image.fromarray(I, 'RGB').save(os.path.join(self.work_dir, f"augmented_image_{i}.png"))
 		
+		exit()
+
 
 class CutOutColorWrapper(gym.Wrapper):
 	def __init__(self, env, mode, save_augpics, frame_stack, work_dir, obs_size):
@@ -188,6 +190,8 @@ class NeuralAugmentWrapper(gym.Wrapper):
 			return state
 		elif self._aug_type == 'noise2net':
 			return self.apply_res2net(state)
+		elif self._aug_type == 'randconv':
+			return self.apply_randconv(state)
 		else:
 			raise NotImplementedError()
 	
@@ -197,6 +201,18 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		out = np.zeros(state.shape)
 		for i in range(self.frame_stack):
 			net = Res2Net(epsilon=0.25).train().cuda()
+			curr_out = call_augfn(state[i*3:(i+1)*3], net)
+			out[i*3:(i+1)*3] = curr_out
+		
+		out = out.astype(np.uint8)
+
+		return out
+	
+	def apply_randconv(self, state):
+		# 3 Images
+		out = np.zeros(state.shape)
+		for i in range(self.frame_stack):
+			net = torch.nn.Conv2d(3, 3, 3, stride=1, padding=1).train().cuda()
 			curr_out = call_augfn(state[i*3:(i+1)*3], net)
 			out[i*3:(i+1)*3] = curr_out
 		

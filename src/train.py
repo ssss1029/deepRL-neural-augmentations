@@ -47,6 +47,7 @@ def main(args):
 		action_repeat=args.action_repeat,
 		mode=args.mode,
 		neural_aug_type=args.neural_aug_type,
+		neural_aug_skip_prob=args.neural_aug_skip_prob,
 		augmix=args.augmix,
 		cutout_color=args.cutout_color,
 		save_augpics=args.save_augpics,

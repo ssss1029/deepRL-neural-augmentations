@@ -94,7 +94,13 @@ def init_env(args):
 			seed=args.seed,
 			episode_length=args.episode_length,
 			action_repeat=args.action_repeat,
-			mode=args.mode
+			mode=args.mode,
+			neural_aug_type=args.neural_aug_type,
+			neural_aug_skip_prob=args.neural_aug_skip_prob,
+			augmix=args.augmix,
+			cutout_color=args.cutout_color,
+			save_augpics=args.save_augpics,
+			work_dir=args.work_dir
 		)
 
 

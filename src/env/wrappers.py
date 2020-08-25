@@ -16,6 +16,8 @@ from env.neural_augs.Res2Net import Res2Net
 from env.neural_augs.utils import call_augfn
 from env.neural_augs.augmix.AugMix import augment_and_mix
 
+import random
+
 
 def make_pad_env(
 		domain_name,
@@ -26,6 +28,7 @@ def make_pad_env(
 		action_repeat=4,
 		mode='train',
 		neural_aug_type='none',
+		neural_aug_skip_prob=0.0,
 		augmix=False,
 		cutout_color=False,
 		save_augpics=False,
@@ -52,7 +55,7 @@ def make_pad_env(
 	env = ColorWrapper(env, mode)
 	
 	# Augmentations
-	env = NeuralAugmentWrapper(env, mode, neural_aug_type, save_augpics, frame_stack, work_dir)
+	env = NeuralAugmentWrapper(env, mode, neural_aug_type, neural_aug_skip_prob, save_augpics, frame_stack, work_dir)
 	if augmix == True:
 		env = AugMixWrapper(env, mode, save_augpics, frame_stack, work_dir, OBS_SIZE)
 	if cutout_color == True:
@@ -170,7 +173,7 @@ class NeuralAugmentWrapper(gym.Wrapper):
 	"""
 	Apply neural augmentations to observations
 	"""
-	def __init__(self, env, mode, aug_type, save_augpics, frame_stack, work_dir):
+	def __init__(self, env, mode, aug_type, skip_prob, save_augpics, frame_stack, work_dir):
 		super().__init__(env)
 		self.env = env
 		self._mode = mode
@@ -179,6 +182,7 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		self.save_augpics = save_augpics
 		self._max_episode_steps = env._max_episode_steps
 		self.work_dir = work_dir
+		self.skip_prob = skip_prob
 
 	def step(self, action):
 		next_state, reward, done, info = self.env.step(action)
@@ -200,9 +204,13 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		# 3 Images
 		out = np.zeros(state.shape)
 		for i in range(self.frame_stack):
-			net = Res2Net(epsilon=0.25).train().cuda()
-			curr_out = call_augfn(state[i*3:(i+1)*3], net)
-			out[i*3:(i+1)*3] = curr_out
+			# Handle skip probability
+			if random.random() < self.skip_prob:
+				out[i*3:(i+1)*3] = state[i*3:(i+1)*3]
+			else:
+				net = Res2Net(epsilon=0.25).train().cuda()
+				curr_out = call_augfn(state[i*3:(i+1)*3], net)
+				out[i*3:(i+1)*3] = curr_out
 		
 		out = out.astype(np.uint8)
 
@@ -212,9 +220,14 @@ class NeuralAugmentWrapper(gym.Wrapper):
 		# 3 Images
 		out = np.zeros(state.shape)
 		for i in range(self.frame_stack):
-			net = torch.nn.Conv2d(3, 3, 3, stride=1, padding=1).train().cuda()
-			curr_out = call_augfn(state[i*3:(i+1)*3], net)
-			out[i*3:(i+1)*3] = curr_out
+			# Handle skip probability
+			if random.random() < self.skip_prob:
+				out[i*3:(i+1)*3] = state[i*3:(i+1)*3]
+			else:
+				net = torch.nn.Conv2d(3, 3, 3, stride=1, padding=1).train().cuda()
+				torch.nn.init.xavier_normal_(net.weight, gain=1.0)
+				curr_out = call_augfn(state[i*3:(i+1)*3], net)
+				out[i*3:(i+1)*3] = curr_out
 		
 		out = out.astype(np.uint8)
 

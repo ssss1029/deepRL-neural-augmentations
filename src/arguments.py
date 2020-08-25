@@ -44,6 +44,7 @@ def parse_args():
 
 	# Neural Augmentations
 	parser.add_argument('--neural_aug_type', default='none', choices=['none', 'noise2net', 'randconv'])
+	parser.add_argument('--neural_aug_skip_prob', default=0.0, type=float)
 	parser.add_argument('--save_augpics', default=False, action='store_true')
 	parser.add_argument('--augmix', default=False, action='store_true')
 	parser.add_argument('--cutout_color', default=False, action='store_true')

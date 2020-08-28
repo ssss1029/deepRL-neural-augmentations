@@ -1,4 +1,4 @@
-   ncalls,  tottime  percall,  cumtime  percall, filename:lineno,(function,)
+   ncalls,  tottime,  percall,  cumtime,  percall, filename:lineno(function)
         1,    0.000,    0.000,    0.000,    0.000, <__array_function__ internals>:2(<module>)
     61004,    0.093,    0.000,    0.874,    0.000, <__array_function__ internals>:2(all)
     30034,    0.041,    0.000,    0.274,    0.000, <__array_function__ internals>:2(atleast_1d)
@@ -5931,4 +5931,3 @@
        22,    0.000,    0.000,    0.000,    0.000, {method 'write' of '_io.TextIOWrapper' objects}
    561454,    3.554,    0.000,    3.554,    0.000, {method 'zero_' of 'torch._C._TensorBase' objects}
       566,    0.000,    0.000,    0.000,    0.000, {method 'zfill' of 'str' objects}
-      

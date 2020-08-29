@@ -1,24 +1,13 @@
+
+"""
+
+This is a pretrainining script for what is essentially a smaller, vgg-like network. 
+The plan is to use this as the vision module in pixel-based RL tasks.
+
+"""
+
 import torch
 import torch.nn as nn
-from .utils import load_state_dict_from_url
-
-
-__all__ = [
-    'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
-    'vgg19_bn', 'vgg19',
-]
-
-
-model_urls = {
-    'vgg11': 'https://download.pytorch.org/models/vgg11-bbd30ac9.pth',
-    'vgg13': 'https://download.pytorch.org/models/vgg13-c768596a.pth',
-    'vgg16': 'https://download.pytorch.org/models/vgg16-397923af.pth',
-    'vgg19': 'https://download.pytorch.org/models/vgg19-dcbb9e9d.pth',
-    'vgg11_bn': 'https://download.pytorch.org/models/vgg11_bn-6002323d.pth',
-    'vgg13_bn': 'https://download.pytorch.org/models/vgg13_bn-abd245e5.pth',
-    'vgg16_bn': 'https://download.pytorch.org/models/vgg16_bn-6c64b313.pth',
-    'vgg19_bn': 'https://download.pytorch.org/models/vgg19_bn-c79401a0.pth',
-}
 
 
 class VGG(nn.Module):
@@ -26,22 +15,22 @@ class VGG(nn.Module):
     def __init__(self, features, num_classes=1000, init_weights=True):
         super(VGG, self).__init__()
         self.features = features
-        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
+        # self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 4096),
+            nn.Linear(128 * 14 * 14, 1024),
             nn.ReLU(True),
             nn.Dropout(),
-            nn.Linear(4096, 4096),
+            nn.Linear(1024, 1024),
             nn.ReLU(True),
             nn.Dropout(),
-            nn.Linear(4096, num_classes),
+            nn.Linear(1024, num_classes),
         )
         if init_weights:
             self._initialize_weights()
 
     def forward(self, x):
         x = self.features(x)
-        x = self.avgpool(x)
+        # x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
@@ -78,19 +67,13 @@ def make_layers(cfg, batch_norm=False):
 
 
 
-def _vgg(arch, cfg, batch_norm, pretrained, progress, **kwargs):
-    if pretrained:
-        kwargs['init_weights'] = False
+def _vgg(arch, cfg, batch_norm, **kwargs):
     model = VGG(make_layers(cfg, batch_norm=batch_norm), **kwargs)
-    if pretrained:
-        state_dict = load_state_dict_from_url(model_urls[arch],
-                                              progress=progress)
-        model.load_state_dict(state_dict)
     return model
 
 
-def vgg16(pretrained=False, progress=True, **kwargs):
-    r"""VGG 16-layer model (configuration "D")
+def minivgg(num_classes=1000, **kwargs):
+    r"""Mini-VGG
     `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -98,10 +81,9 @@ def vgg16(pretrained=False, progress=True, **kwargs):
     """
     return _vgg(
         'vgg16', 
-        [32, 32, 'M', 32, 32, 'M', 32, 32, 32, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'], 
-        False, 
-        pretrained, 
-        progress, 
+        [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'], 
+        batch_norm=True, 
+        num_classes=num_classes,
         **kwargs
     )
 
